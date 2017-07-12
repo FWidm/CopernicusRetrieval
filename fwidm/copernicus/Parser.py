@@ -42,7 +42,7 @@ class Parser(object):
         return None
 
     @staticmethod
-    def getKeys(filePath,point,n=1):
+    def get_keys(filePath,point,n=1):
         results=[]
         f = open(filePath)
 
