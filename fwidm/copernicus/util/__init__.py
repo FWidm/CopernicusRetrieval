@@ -78,7 +78,7 @@ def retrieve_parameters():
     for index, row in table.iterrows():
         if ('Reserved' not in row[2]):
             param = {
-                'id': int(row[0]),
+                'id': str(int(row[0]))+".128", #change this to the correct grib version!!
                 'shortName': row[1].encode('utf8'),
                 'description': row[2].encode('utf8'),
                 'unit': row[3].replace('-','^-').encode('utf8')
