@@ -68,18 +68,6 @@ class HTMLTableParser:
         return df
 
 
-def export_json(file_name, data):
-    '''
-    Saves the given data to a json file
-    :param file_name:
-    :param data:
-    :return:
-    '''
-    with open(file_name, 'wb') as outfile:
-        json.dump(data, outfile, sort_keys=True, indent=4)
-    with open(file_name) as infile:
-        data = json.load(infile)
-
 
 def retrieve_parameters():
     hp = HTMLTableParser()
@@ -114,15 +102,13 @@ def retrieve_parameters():
             if '2' in sname:
                 sname = sname.replace('2', 'TWO')
 
+            # stringify the paramters to python's default dict representation "x = {'key':<val>}"
             params.append(sname.upper() + '=' + str(param))
-            print sname
 
     # Save parsed parameters to the temp text file - copy contents to /fwidm/copernicus/data/Parameters.py
     with open('../../../parameters.txt', 'wb') as f:
         for entry in params:
             f.write(str(entry) + os.linesep)
-
-    pprint(params)
 
 
 retrieve_parameters()

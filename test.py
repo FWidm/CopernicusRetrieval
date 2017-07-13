@@ -21,4 +21,3 @@ result = Parser.Parser.get_keys("2017-07-06.grib",points[0])
 # value
 pprint(result)
 
-print "param tmp={} val={}".format(Parameters.Parameter.temperature_2m,Parameters.Parameter.temperature_2m.value)

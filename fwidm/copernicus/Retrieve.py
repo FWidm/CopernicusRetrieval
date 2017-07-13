@@ -5,6 +5,14 @@ from datetime import datetime, timedelta
 class Retrieve(object):
     @staticmethod
     def retrieveFile(fileName, parameters, dateString, filterEurope=True):
+        """
+        Retrieves the file from the Copernicus Atmospheric Monitoring Service
+        :param fileName: file name of the retrieved file
+        :param parameters: list of wanted parameters see fwidm.copernicus.data.Parameters
+        :param dateString:
+        :param filterEurope:
+        :return:
+        """
         server = ECMWFDataServer()
         # see keywords here:
         #        https://software.ecmwf.int/wiki/display/UDOC/Identification+keywords?src=contextnavpagetreemode
@@ -30,4 +38,4 @@ class Retrieve(object):
             # europe
             setup["area"] = "75/-20/10/60"
         print "setup={}".format(setup)
-        server.retrieve(setup)
+        #server.retrieve(setup)

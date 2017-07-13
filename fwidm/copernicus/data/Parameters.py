@@ -1,9 +1,30 @@
 from enum import Enum
 
 
+# Availeble times for the analysis
+class Time(Enum):
+    ZERO = '00:00:00'
+    SIX = '06:00:00'
+    TWELVE = '12:00:00'
+    EIGHTTEEN = '18:00:00'
+
+
 # see here: http://apps.ecmwf.int/codes/grib/param-db
 # https://rda.ucar.edu/docs/formats/grib/gribdoc/ecmwf_params.html v128?
 class Parameter(Enum):
+    @staticmethod
+    def lookup_id(paramId):
+        """
+        Retrieves an enum entry by id.
+        :param paramId:
+        :return: Enum else None
+        """
+        # noinspection PyTypeChecker
+        for p in Parameter:
+            if p.value['id'] == paramId:
+                return p
+        return None
+
     STREAM_FUNCTION = {'shortName': 'STRF', 'id': 1, 'unit': 'm2 s^-1', 'description': 'Stream function'}
     VELOCITY_POTENTIAL = {'shortName': 'VPOT', 'id': 2, 'unit': 'm2 s^-1', 'description': 'Velocity potential'}
     POTENTIAL_TEMPERATURE = {'shortName': 'PT', 'id': 3, 'unit': 'K', 'description': 'Potential temperature'}
