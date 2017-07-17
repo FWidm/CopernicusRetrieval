@@ -5,8 +5,24 @@ from datetime import datetime, timedelta
 
 class Retrieve(object):
 
+    def era5_retrieve(selfs):
+        server = ECMWFDataServer()
+        server.retrieve({
+            "class": "ea",
+            "dataset": "era5",
+            "date": "2016-07-31",
+            "expver": "1",
+            "levelist": "2",
+            "levtype": "pl",
+            "number": "0/1/2/3/4/5/6/7/8/9",
+            "param": "60.128/75.128/76.128/129.128/130.128/131.128/132.128/133.128/135.128/138.128/155.128/157.128/203.128/246.128/247.128/248.128",
+            "stream": "enda",
+            "time": "00:00:00/03:00:00/06:00:00/09:00:00/12:00:00/15:00:00/18:00:00/21:00:00",
+            "type": "an",
+            "target": "output",
+        })
 
-    def retrieveFile(self, fileName, parameters, dateString, times=Parameters.Time.ALL, filterEurope=True):
+    def retrieve_file(self, fileName, parameters, dateString, times=Parameters.Time.all(), filterEurope=True):
         """
         Retrieves the file from the Copernicus Atmospheric Monitoring Service
         :param fileName: file name of the retrieved file

@@ -68,7 +68,6 @@ class HTMLTableParser:
         return df
 
 
-
 def retrieve_parameters():
     hp = HTMLTableParser()
     table = hp.parse_url(
@@ -78,10 +77,11 @@ def retrieve_parameters():
     for index, row in table.iterrows():
         if ('Reserved' not in row[2]):
             param = {
-                'id': str(int(row[0]))+".128", #change this to the correct grib version!!
+                'eraId': str(int(row[0])) + ".128",  # change this to the correct grib version!!
+                'id': int(row[0]),
                 'shortName': row[1].encode('utf8'),
                 'description': row[2].encode('utf8'),
-                'unit': row[3].replace('-','^-').encode('utf8')
+                'unit': row[3].replace('-', '^-').encode('utf8')
             }
             sname = row[2].encode('utf8')
 
@@ -91,7 +91,7 @@ def retrieve_parameters():
                     sname = sname.replace(ch, "_")
 
             # replace brackets
-            for ch in ['(',')' ]:
+            for ch in ['(', ')']:
                 if ch in sname:
                     sname = sname.replace(ch, "")
 
@@ -103,7 +103,14 @@ def retrieve_parameters():
                 sname = sname.replace('2', 'TWO')
 
             # stringify the paramters to python's default dict representation "x = {'key':<val>}"
-            params.append(sname.upper() + '=' + str(param))
+            if int(row[0]) in [34, 129, 137, 151, 164, 165, 166, 167, 168, 172, 174, 186, 187, 188]:
+                params.append(sname.upper() + '=' + str(param))
+
+        # >> > for val in valid_params.split("/"): --> see Parameters.Parameter comment for more info
+        #     ... split = val.split(".")
+        #     ... if "128" in split[1]:
+        #     ...   x.append(int(split[0]))
+        # [34, 129, 137, 151, 164, 165, 166, 167, 168, 172, 174, 186, 187, 188]
 
     # Save parsed parameters to the temp text file - copy contents to /fwidm/copernicus/data/Parameters.py
     with open('../../../parameters.txt', 'wb') as f:
