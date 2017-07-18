@@ -29,13 +29,13 @@ r = Retrieve.Retrieve()
 # r.retrieveFile(dateString,param_list,dateString)
 
 
-points = (48.4391, 9.9823)
+points = [[48.4391, 9.9823]]#,[48.301669,9.900532],[48.777106,9.180769]]
 # result = Parser.Parser.nearest("2017-07-06.grib", points)
 parser = Parser.Parser()
-result = parser.get_nearest_values("2017-07-08.grib", points, parameters=[Parameters.Parameter.MEAN_SEA_LEVEL_PRESSURE],
-                                   times=[Parameters.Time.SIX])
+for point in points:
+    result = parser.get_nearest_values("2017-07-08.grib", point)
 # parser.iterate_keys("2017-07-08.grib")#parser.iterate_keys("2017-07-08.grib")
-print(json.dumps(result, default=json_serial, indent=2))
+    print(json.dumps(result, default=json_serial, indent=2))
 
 
 

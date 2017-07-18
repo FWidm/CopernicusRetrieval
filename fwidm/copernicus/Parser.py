@@ -9,7 +9,12 @@ from fwidm.copernicus.data import Parameters
 
 class Parser(object):
     def retrieve_metadata(self, gid):
-        # more information: https://software.ecmwf.int/wiki/display/ECC/GRIB%3A+Keys
+        """
+        Retrieves specific metadata keys from the currently loaded grib file
+        more information: https://software.ecmwf.int/wiki/display/ECC/GRIB%3A+Keys
+        :param gid: grib file
+        :return: dictionary containing the keys
+        """
         keys = [
             'dataTime',
             'paramId',  # parameter works as well
@@ -30,21 +35,19 @@ class Parser(object):
         # ecc_data contains lat, lon, index, value, distance (from target in km)
         # meta data contains dataTime, paramId, units, shortName, name
         retDict = {}
-        tmpList = []
-        paramId = None
+        data = {}
         for i in range(0, len(ecc_data)):
             data = dict(ecc_data[i])
             data['paramId'] = meta_data['paramId']
             data['date'] = datetime.strptime(str(meta_data['date']), '%Y%m%d').replace(hour=meta_data['dataTime'] / 100,
                                                                                        tzinfo=pytz.UTC)
             data['description'] = meta_data
-            tmpList.append(data)
         param = Parameters.Parameter.lookup_id(meta_data['paramId'])
-        retDict[param.name] = tmpList
+        retDict[param.name] = data
         return retDict
 
     def get_nearest_values(self, filePath, point, n=1, parameters=Parameters.Parameter.all(),
-                           times=Parameters.Time.all()):
+                           times=Parameters.Time.all(), regroup=True):
         """
          Retrieves data from the given filePath - retrieves 1 or 4 values near the given point
         :param filePath: path to the retrieved grib file
@@ -54,12 +57,13 @@ class Parser(object):
         :param times: list of times (Parameters.Time)
         :return: dict containing all expected values
         """
-        results = {}
-        list = []
         f = open(filePath)
         if n != 1 and n != 4:
             raise Exception("Parameter 'n' describes the number of requested data points and must be either 1 or 4.")
-
+        if type(point[0]) is not float:
+            raise Exception("Point should be a list of two coordinates in the form of [lat:float,lon:float] ")
+        results = {}
+        list = []
         # loop through all the parameters
         while 1:
             gid = eccodes.codes_grib_new_from_file(f)
@@ -81,6 +85,8 @@ class Parser(object):
 
         f.close()
         results['values'] = list
+        if regroup:
+            results = self.group_dict_by_param(results)
 
         return results
 
@@ -112,3 +118,19 @@ class Parser(object):
             eccodes.codes_release(gid)
 
         f.close()
+
+    def group_dict_by_param(self, dict):
+        """
+        groups all values of a specific type inside the same dict e.g. if 4 values for "mean sea level pressure" exist,
+        all values are now in a list under the same key.
+        :param dict: resulting dict after parsing
+        :return: grouped up dictionary by parameter-type
+        """
+        new = {}
+        for item in dict['values']:
+            for key, val in item.iteritems():
+                if key not in new:
+                    new[key] = []
+                new[key].append(val)
+
+        return new
