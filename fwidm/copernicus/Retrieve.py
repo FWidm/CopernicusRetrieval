@@ -1,9 +1,23 @@
 from ecmwfapi import *
-from fwidm.copernicus.data import Parameters
+from fwidm.copernicus.data import Enums
 from datetime import datetime, timedelta
+
+DATEFORMAT = "%Y-%m-%d"
 
 
 class Retrieve(object):
+    def parse_date(self, date, dataSetDelay):
+        """
+        Returns the expected Y-m-d representation of the given date. Also checks if the date is valid for retrieval by checking the dataset day limit.
+        :param date: we want to retrieve data for
+        :param dataSetDelay: delay that is imposed by the dataset - 5 days for CAMS NREALTIME
+        :return: string representation in the format Retrieve.DATEFORMAT
+        """
+        if (datetime.today() - date).days < dataSetDelay:
+            raise Exception(
+                "Cannot retrieve Data from this set for the date. The latest data available is from: {} - sent date is: {}".format(
+                    (datetime.today() - timedelta(days=5)).strftime(DATEFORMAT),date.strftime(DATEFORMAT)))
+        return date.strftime(DATEFORMAT)
 
     def era5_retrieve(selfs):
         server = ECMWFDataServer()
@@ -22,7 +36,9 @@ class Retrieve(object):
             "target": "output",
         })
 
-    def retrieve_file(self, fileName, parameters, dateString, times=Parameters.Time.all(), filterEurope=True):
+    def retrieve_file(self, fileName, date=datetime.today(), dataSet=Enums.DataSets.CAMS,
+                      parameters=Enums.ParameterCAMS.all(), times=Enums.Time.all(),
+                      filterEurope=True):
         """
         Retrieves the file from the Copernicus Atmospheric Monitoring Service
         :param fileName: file name of the retrieved file
@@ -33,16 +49,30 @@ class Retrieve(object):
         :return:
         """
         if parameters is None or times is None:
-            raise ValueError("Parameter 'parameters' cannot be None. Please provice a valid list of Parameters.Parameter or a single Parameters.Parameter object.")
-        timesString=Parameters.Time.combine_to_string(times)
-        parametersString=Parameters.Parameter.combine_to_string(parameters)
+            raise ValueError(
+                "Parameter 'parameters' cannot be None. Please provice a valid list of Enums.Parameter or a single Enums.Parameter object.")
+        dateString = self.parse_date(date, dataSet.value['delayDays'])
+        timesString = Enums.Time.combine_to_string(times)
+        parametersString = Enums.ParameterCAMS.combine_to_string(parameters)
+
         server = ECMWFDataServer()
-        print "Retrieving with parameters... times={}; parameters={}".format(timesString,parametersString)
+
+        file = fileName
+        if not file.endswith('.grib'):
+            file += '.grib'
+
+        reqClassString=dataSet.value['class']
+        reqDataSetString=dataSet.value['name']
+
+        print "Retrieving with parameters... times={}; parameters={}, class={} and dataSet={}".format(timesString,
+                                                                                                      parametersString,
+                                                                                                      reqClassString,
+                                                                                                      reqDataSetString)
         # see keywords here:
         #        https://software.ecmwf.int/wiki/display/UDOC/Identification+keywords?src=contextnavpagetreemode
         setup = {
-            "class": "mc",
-            "dataset": "cams_nrealtime",
+            "class": reqClassString,
+            "dataset": reqDataSetString,
             "date": dateString,
             "expver": "0001",
             # levtype - denotes type of level. Its value has a direct implication on valid levelist values.
@@ -50,16 +80,17 @@ class Retrieve(object):
             #   potential temperature (pt) and depth (dp).
             "levtype": "sfc",
             # specifies the meteorological parameter.
-            "param": parametersString,#"151.128/167.128",  # temperature and mean sea level pressure
+            "param": parametersString,  # "151.128/167.128",  # temperature and mean sea level pressure
             "step": "0",
             "stream": "oper",
-            "time": timesString,#"00:00:00/06:00:00/12:00:00/18:00:00",
+            "time": timesString,  # "00:00:00/06:00:00/12:00:00/18:00:00",
             # see http://apps.ecmwf.int/codes/grib/format/mars/type/ - fc: forecast, an:analysis
             "type": "an",
-            "target": fileName + ".grib",
+            "target": file,
         }
         if filterEurope:
             # europe
             setup["area"] = "75/-20/10/60"
         print "setup={}".format(setup)
-        server.retrieve(setup)
+        # server.retrieve(setup)
+        # return file

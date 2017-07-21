@@ -4,7 +4,7 @@ from datetime import date, datetime
 
 from fwidm.copernicus import Parser, Retrieve
 from datetime import datetime, timedelta
-from fwidm.copernicus.data import Parameters
+from fwidm.copernicus.data import Enums
 import json
 
 
@@ -19,25 +19,22 @@ def json_serial(obj):
 
 r = Retrieve.Retrieve()
 latestRetrievalDate = datetime.today() - timedelta(days=5)
-dateString = latestRetrievalDate.strftime("%Y-%m-%d")
+dateString = latestRetrievalDate.strftime(Retrieve.DATEFORMAT)
 
-print "retrievalDate={}; type={}".format(dateString, type(dateString))
+# print "retrievalDate={}; type={}".format(dateString, type(dateString))
 # times=Parameters.Time.ZERO
-param_list = Parameters.Parameter.all()
-# print Parameters.Parameter.combine_to_string(param_list)
-r = Retrieve.Retrieve()
-# r.retrieveFile(dateString,param_list,dateString)
-
+param_list = Enums.ParameterCAMS.all()
+# print Enums.Parameter.combine_to_string(param_list)
+file=r.retrieve_file(dateString,date=latestRetrievalDate)
 
 points = [[48.4391, 9.9823]]#,[48.301669,9.900532],[48.777106,9.180769]]
 # result = Parser.Parser.nearest("2017-07-06.grib", points)
 parser = Parser.Parser()
-for point in points:
-    result = parser.get_nearest_values("2017-07-08.grib", point)
-# parser.iterate_keys("2017-07-08.grib")#parser.iterate_keys("2017-07-08.grib")
-    print(json.dumps(result, default=json_serial, indent=2))
+# for point in points:
+#     result = parser.get_nearest_values("2017-07-15.grib", point)
+#     print(json.dumps(result, default=json_serial, indent=2))
 
+# Prints all the params inside the grib file.
+# resultList = parser.get_parameters("2017-07-15.grib")
+# print  "\n".join(resultList)
 
-
-# param_list=[param for param in Parameters.Parameter]
-# print Parameters.Parameter.combine_to_string(param_list)

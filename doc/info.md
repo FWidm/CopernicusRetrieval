@@ -1,4 +1,9 @@
 # Copernicus Library notes
+## Functionality
+1. `copernicus.Retrieve` contains the Retrieve class that allows you to retrieve data from the ECMWF Data set by specifying times and parameters - currently only for the analysis part. The method `retrieve_file` 
+2. `copernicus.Parser` in turn can get you the nearest data for a Location (lat,lng), specific times and parameters.
+    - It also offers methods to retrieve all parameter's meta data in a specific format so that you can extend the `copernicus.data.Parameters`.
+    
 ## Using Python from PHP when following the setup with conda
 Call [`exec($cmd,$out)`](http://php.net/manual/de/function.exec.php) to run the script, `$cmd`should contain the command to activate the correct conda environment and in turn call the script
 ```php

@@ -68,7 +68,34 @@ class HTMLTableParser:
         return df
 
 
-def retrieve_parameters():
+def encode_name(param):
+    """
+    Encodes the given param description into a valid enum name.
+    :param param:
+    :return:
+    """
+    sname = param
+    # replace all kind of unwanted chars in a python dictname.
+    sname=sname.strip()
+    for ch in ['/', ' + ', ' ', '#', '&', '-', ',', '+', ]:
+        if ch in sname:
+            sname = sname.replace(ch, "_")
+
+    # replace brackets
+    for ch in ['(', ')']:
+        if ch in sname:
+            sname = sname.replace(ch, "")
+
+    # replace the numbers 2 and 10 with the text representation
+    if '10' in sname:
+        sname = sname.replace('10', 'TEN')
+
+    if '2' in sname:
+        sname = sname.replace('2', 'TWO')
+    return sname.upper()
+
+
+def retrieve_parameters_online():
     hp = HTMLTableParser()
     table = hp.parse_url(
         'https://rda.ucar.edu/cgi-bin/transform?xml=/metadata/ParameterTables/WMO_GRIB1.98-0.128.xml&view=gribdoc')
@@ -83,34 +110,17 @@ def retrieve_parameters():
                 'description': row[2].encode('utf8'),
                 'unit': row[3].replace('-', '^-').encode('utf8')
             }
-            sname = row[2].encode('utf8')
-
-            # replace all kind of unwanted chars in a python library.
-            for ch in ['/', ' + ', ' ', '#', '&', '-', ',', '+', ]:
-                if ch in sname:
-                    sname = sname.replace(ch, "_")
-
-            # replace brackets
-            for ch in ['(', ')']:
-                if ch in sname:
-                    sname = sname.replace(ch, "")
-
-            # replace the numbers 2 and 10 with the text representation
-            if '10' in sname:
-                sname = sname.replace('10', 'TEN')
-
-            if '2' in sname:
-                sname = sname.replace('2', 'TWO')
+            sname = encode_name(row[2].encode('utf8'))
 
             # stringify the paramters to python's default dict representation "x = {'key':<val>}"
             if int(row[0]) in [34, 129, 137, 151, 164, 165, 166, 167, 168, 172, 174, 186, 187, 188]:
-                params.append(sname.upper() + '=' + str(param))
+                params.append(sname + '=' + str(param))
 
-        # >> > for val in valid_params.split("/"): --> see Parameters.Parameter comment for more info
-        #     ... split = val.split(".")
-        #     ... if "128" in split[1]:
-        #     ...   x.append(int(split[0]))
-        # [34, 129, 137, 151, 164, 165, 166, 167, 168, 172, 174, 186, 187, 188]
+                # >> > for val in valid_params.split("/"): --> see Parameters.Parameter comment for more info
+                #     ... split = val.split(".")
+                #     ... if "128" in split[1]:
+                #     ...   x.append(int(split[0]))
+                # [34, 129, 137, 151, 164, 165, 166, 167, 168, 172, 174, 186, 187, 188]
 
     # Save parsed parameters to the temp text file - copy contents to /fwidm/copernicus/data/Parameters.py
     with open('../../../parameters.txt', 'wb') as f:
@@ -118,5 +128,32 @@ def retrieve_parameters():
             f.write(str(entry) + os.linesep)
 
 
-retrieve_parameters()
+def retrieve_parameters_from_grib(metadataList):
+    """
+    Takes a list of metadata from all the entries in the grib file and retrieves it.
+    :param metadataList:
+    :return:
+    """
+    retList = []
+    for metadataDict in metadataList:
+        id = None
+        if any(s in str(metadataDict['paramId']) for s in ["210", "218", "128"]):
+            id = str(metadataDict['paramId'])[3:].strip("0") + "." + str(metadataDict['paramId'])[:3]
+        else:
+            id = str(metadataDict['paramId'])+".128"
+        metadataDict['eraId'] = id
+        metadataDict['unit'] = metadataDict.pop('units')
+        metadataDict['id'] = metadataDict.pop('paramId')
+        metadataDict['description'] = metadataDict.pop('name')
+
+        del metadataDict['dataTime']
+        del metadataDict['date']
+        # {'eraId': '167.128', 'shortName': '2T', 'id': 167, 'unit': 'K','description': '2 metre temperature'}
+        retList.append(encode_name(metadataDict['description']) + "= {'eraId':'" + metadataDict[
+            'eraId'] + "', 'shortName':'" + metadataDict['shortName'] + "', 'id':" + str(
+            metadataDict['id']) + ",'unit':'" + \
+                       metadataDict['unit'] + "','description':'" + metadataDict['description'] + "'}")
+    return retList
+
+# retrieve_parameters()
 # parse_parameters("../../../parameters.json")
