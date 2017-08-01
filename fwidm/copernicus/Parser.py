@@ -6,6 +6,7 @@ import pytz
 
 from fwidm.copernicus import util
 from fwidm.copernicus.data import Enums
+from fwidm.copernicus.data.CopernicusData import CopernicusData
 
 
 class Parser(object):
@@ -33,23 +34,50 @@ class Parser(object):
                 print 'Error with key="%s" : %s' % (key, err.msg)
         return dict
 
-    def format_data(self, ecc_data, meta_data):
-        # ecc_data contains lat, lon, index, value, distance (from target in km)
-        # meta data contains dataTime, paramId, units, shortName, name
+
+    def convert_to_alternative_unit(self, value, unit):
+        """
+        Converts the retrieved value from thee existing Unit into another one if supported.
+        :param value: to convert from
+        :param unit: to convert from
+        :return: touple of value and unit
+        """
+        #print value,unit
+        if "K" in unit:
+            return value-273.15,"C"
+        return None,None
+
+
+
+    def format_data(self, eccData, metadata):
+        """
+        reformat the data
+        :param eccData: contains lat, lon, index, value, distance (from target in km)
+        :param metadata: contains dataTime, paramId, units, shortName, name
+        :return:
+        """
         retDict = {}
         data = {}
-        for i in range(0, len(ecc_data)):
-            data = dict(ecc_data[i])
-            data['paramId'] = meta_data['paramId']
-            data['date'] = datetime.strptime(str(meta_data['date']), '%Y%m%d').replace(hour=meta_data['dataTime'] / 100,
-                                                                                       tzinfo=pytz.UTC)
-            data['description'] = meta_data
-        param = Enums.ParameterCAMS.lookup_id(meta_data['paramId'])
-        retDict[param.name] = data
+        for i in range(0, len(eccData)):
+            data = dict(eccData[i])
+            #data['paramId'] = metadata['paramId']
+            data['date'] = datetime.strptime(str(metadata['date']), '%Y%m%d').replace(hour=metadata['dataTime'] / 100,
+                                                                                      tzinfo=pytz.UTC)
+            convertedVal, targetUnit = self.convert_to_alternative_unit(data['value'],metadata['units'])
+            data['description'] = metadata
+
+            if convertedVal:
+                data['convertedValue']=convertedVal
+            if targetUnit:
+                data['description']['convertedUnit'] = targetUnit
+
+        param = Enums.ParameterCAMS.lookup_id(metadata['paramId'])
+        #todo: adjust type here.
+        retDict[param.name] = CopernicusData(data,metadata['name'])
         return retDict
 
     def get_nearest_values(self, filePath, point, n=1, parameters=Enums.ParameterCAMS.all(),
-                           times=Enums.Time.all(), regroup=True):
+                           times=Enums.Time.all(), regroup=False):
         """
          Retrieves data from the given filePath - retrieves 1 or 4 values near the given point
         :param filePath: path to the retrieved grib file
@@ -75,7 +103,7 @@ class Parser(object):
             metadata = self.retrieve_metadata(gid)
 
             if Enums.ParameterCAMS.lookup_id(metadata['paramId']) not in parameters:  # skip unused/unsupported params
-                print "skipping... metadata={}".format(metadata)
+                #print "skipping... metadata={}".format(metadata)
                 continue
 
             if Enums.Time.lookup_time(metadata['dataTime']) not in times:  # skip unused/unsupported times

@@ -50,7 +50,8 @@ class Retrieve(object):
         """
         if parameters is None or times is None:
             raise ValueError(
-                "Parameter 'parameters' cannot be None. Please provice a valid list of Enums.Parameter or a single Enums.Parameter object.")
+                "Parameters 'parameters' and 'times' cannot be None. Please provide a valid list of 'Enums.Parameter' or a single 'Enums.Parameter' object."
+                "as a 'parameter' and a valid 'Enum.Time' representation.")
         dateString = self.parse_date(date, dataSet.value['delayDays'])
         timesString = Enums.Time.combine_to_string(times)
         parametersString = Enums.ParameterCAMS.combine_to_string(parameters)
@@ -92,5 +93,5 @@ class Retrieve(object):
             # europe
             setup["area"] = "75/-20/10/60"
         print "setup={}".format(setup)
-        # server.retrieve(setup)
-        # return file
+        server.retrieve(setup)
+        return file
