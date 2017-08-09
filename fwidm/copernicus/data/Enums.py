@@ -1,5 +1,8 @@
 from enum import Enum
 
+class DataType(Enum):
+    ANALYSIS = 'an'
+    FORECAST = 'fc'
 
 # Available times for the analysis
 class Time(Enum):
@@ -152,9 +155,9 @@ class ParameterCAMS(Enum):
     GEMS_TOTAL_COLUMN_OZONE = {'eraId': '206.210', 'shortName': 'gtco3', 'id': 210206, 'unit': 'kg m**-2',
                                'description': 'GEMS Total column ozone'}
     # Forecast specific?
-    UV_BIOLOGICALLY_EFFECTIVE_DOSE = {'eraId': '214002.128', 'shortName': 'uvbed', 'id': 214002, 'unit': '~',
+    UV_BIOLOGICALLY_EFFECTIVE_DOSE = {'eraId': '2.124', 'shortName': 'uvbed', 'id': 214002, 'unit': '~',
                                       'description': ' UV biologically effective dose'}
-    UV_BIOLOGICALLY_EFFECTIVE_DOSE_CLEAR_SKY = {'eraId': '214003.128', 'shortName': 'uvbedcs', 'id': 214003,
+    UV_BIOLOGICALLY_EFFECTIVE_DOSE_CLEAR_SKY = {'eraId': '3.214', 'shortName': 'uvbedcs', 'id': 214003,
                                                 'unit': '~', 'description': ' UV biologically effective dose clear-sky'}
     PARTICULATE_MATTER_D_SMALLER_1_UM = {'eraId': '72.210', 'shortName': 'pm1', 'id': 210072, 'unit': 'kg m**-3',
                                          'description': 'Particulate matter d < 1 um'}

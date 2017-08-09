@@ -76,7 +76,7 @@ def encode_name(param):
     """
     sname = param
     # replace all kind of unwanted chars in a python dictname.
-    sname=sname.strip()
+    sname = sname.strip()
     for ch in ['/', ' + ', ' ', '#', '&', '-', ',', '+', ]:
         if ch in sname:
             sname = sname.replace(ch, "_")
@@ -128,11 +128,11 @@ def retrieve_parameters_online():
             f.write(str(entry) + os.linesep)
 
 
-def retrieve_parameters_from_grib(metadataList):
+def parameter_to_string(metadataList, csv=False):
     """
     Takes a list of metadata from all the entries in the grib file and retrieves it.
     :param metadataList:
-    :return:
+    :return: string representation of the list
     """
     retList = []
     for metadataDict in metadataList:
@@ -140,7 +140,7 @@ def retrieve_parameters_from_grib(metadataList):
         if any(s in str(metadataDict['paramId']) for s in ["210", "218", "128"]):
             id = str(metadataDict['paramId'])[3:].strip("0") + "." + str(metadataDict['paramId'])[:3]
         else:
-            id = str(metadataDict['paramId'])+".128"
+            id = str(metadataDict['paramId']) + ".128"
         metadataDict['eraId'] = id
         metadataDict['unit'] = metadataDict.pop('units')
         metadataDict['id'] = metadataDict.pop('paramId')
@@ -149,10 +149,16 @@ def retrieve_parameters_from_grib(metadataList):
         del metadataDict['dataTime']
         del metadataDict['date']
         # {'eraId': '167.128', 'shortName': '2T', 'id': 167, 'unit': 'K','description': '2 metre temperature'}
-        retList.append(encode_name(metadataDict['description']) + "= {'eraId':'" + metadataDict[
-            'eraId'] + "', 'shortName':'" + metadataDict['shortName'] + "', 'id':" + str(
-            metadataDict['id']) + ",'unit':'" + \
-                       metadataDict['unit'] + "','description':'" + metadataDict['description'] + "'}")
+        if csv:
+            retList.append(encode_name(metadataDict['description']) + "; " + metadataDict[
+                'eraId'] + "; " + metadataDict['shortName'] + "; " + str(
+                metadataDict['id']) + "; " + \
+                           metadataDict['unit'] + "; " + metadataDict['description'])
+        else:
+            retList.append(encode_name(metadataDict['description']) + "= {'eraId':'" + metadataDict[
+                'eraId'] + "', 'shortName':'" + metadataDict['shortName'] + "', 'id':" + str(
+                metadataDict['id']) + ",'unit':'" + \
+                           metadataDict['unit'] + "','description':'" + metadataDict['description'] + "'}")
     return retList
 
 # retrieve_parameters()

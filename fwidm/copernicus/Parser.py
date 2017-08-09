@@ -18,6 +18,7 @@ class Parser(object):
         :return: dictionary containing the keys
         """
         keys = [
+            #todo: add more params if needed.
             'dataTime',
             'paramId',  # parameter works as well
             'units',
@@ -77,7 +78,7 @@ class Parser(object):
         return retDict
 
     def get_nearest_values(self, filePath, point, n=1, parameters=Enums.ParameterCAMS.all(),
-                           times=Enums.Time.all(), regroup=False):
+                           times=Enums.Time.all(), regroup=True):
         """
          Retrieves data from the given filePath - retrieves 1 or 4 values near the given point
         :param filePath: path to the retrieved grib file
@@ -137,7 +138,7 @@ class Parser(object):
 
         return new
 
-    def get_parameters(self, filePath):
+    def get_parameters(self, filePath,csv=False):
         """
         Retrieves parameters for all parameters that are currently available at time 00:00:00 and returns them as a list of strings for
         Enums.Parameter.py
@@ -148,10 +149,47 @@ class Parser(object):
         metadataList = []
         # loop through all the parameters and retrieve the metadata
         while 1:
+
             gid = eccodes.codes_grib_new_from_file(f)
             if gid is None:
                 break
             metadata = self.retrieve_metadata(gid)
             if (Enums.Time.lookup_time(metadata['dataTime']) == Enums.Time.ZERO):
                 metadataList.append(metadata)
-        return  util.retrieve_parameters_from_grib(metadataList)
+        return  util.parameter_to_string(metadataList,csv=csv)
+
+    def test_dwd_grib(self, filePath, point, n=1, parameters=Enums.ParameterCAMS.all(),
+                      times=Enums.Time.all(), regroup=False):
+        """
+         Retrieves data from the given filePath - retrieves 1 or 4 values near the given point
+        :param filePath: path to the retrieved grib file
+        :param point: (latitude,longitude)
+        :param n: 1 or 4 points to retrieve
+        :param parameters: list of parameters (Enums.Parameter)
+        :param times: list of times (Enums.Time)
+        :return: dict containing all expected values
+        """
+        f = open(filePath)
+        if n != 1 and n != 4:
+            raise Exception("Parameter 'n' describes the number of requested data points and must be either 1 or 4.")
+        if type(point[0]) is not float:
+            raise Exception("Point should be a list of two coordinates in the form of [lat:float,lon:float] ")
+        results = {}
+        list = []
+        # loop through all the parameters
+        while 1:
+            gid = eccodes.codes_grib_new_from_file(f)
+            if gid is None:
+                break
+            metadata = self.retrieve_metadata(gid)
+            print metadata
+            nearest = eccodes.codes_grib_find_nearest(gid, point[0], point[1], is_lsm=False, npoints=n)
+            list.append(nearest)
+            eccodes.codes_release(gid)
+
+        f.close()
+        results['values'] = list
+        if regroup:
+            results = self.group_dict_by_param(results)
+
+        return results

@@ -1,4 +1,5 @@
 # !/Users/fabianwidmann/anaconda/envs/copernicus/bin/python python
+import os
 from pprint import pprint
 
 from fwidm.copernicus import Parser, Retrieve
@@ -8,29 +9,29 @@ import json
 
 from fwidm.copernicus.data.CopernicusData import CopernicusData
 
-
-
-
-
 r = Retrieve.Retrieve()
 latestRetrievalDate = datetime.today() - timedelta(days=5)
-dateString = latestRetrievalDate.strftime(Retrieve.DATEFORMAT)
+dateString = latestRetrievalDate.strftime(Retrieve.Retrieve.DATEFORMAT)
 
 # print "retrievalDate={}; type={}".format(dateString, type(dateString))
 # times=Parameters.Time.ZERO
 param_list = Enums.ParameterCAMS.all()
 # print Enums.Parameter.combine_to_string(param_list)
-#file=r.retrieve_file(dateString,date=latestRetrievalDate)
+#retrieve forecast with steps 0/3/6/9/12
+file=r.retrieve_file("data/ecmwf/fc-"+dateString,date=latestRetrievalDate,dataType=Enums.DataType.FORECAST, steps=Retrieve.Retrieve.calcSteps(5))
 
-points = [[48.4391, 9.9823]]#,[48.301669,9.900532],[48.777106,9.180769]]
-# result = Parser.Parser.nearest("2017-07-06.grib", points)
+points = [[48.4391, 9.9823]]  # ,[48.301669,9.900532],[48.777106,9.180769]]
+# result = Parser.Parser.nearest("data/ecmwf/2017-07-06.grib", points)
 parser = Parser.Parser()
 for point in points:
-    result = parser.get_nearest_values("2017-07-20.grib", point, parameters=[Enums.ParameterCAMS.TWO_METRE_TEMPERATURE])
-    # print result
+    # result = parser.get_nearest_values("2017-07-20.grib", point, parameters=[Enums.ParameterCAMS.TWO_METRE_TEMPERATURE])
+    result = parser.get_nearest_values(file, point)
     print(json.dumps(result, default=CopernicusData.json_serial, indent=2))
 
-# Prints all the params inside the grib file.
-# resultList = parser.get_parameters("2017-07-14-fc.grib")
-# print  "\n".join(resultList)
 
+    # result = parser.get_nearest_values("data/dwd/dwd.grib2", point)
+    # print(json.dumps(result, default=CopernicusData.json_serial, indent=2))
+
+# Prints all the params inside the grib file.
+# resultList = parser.get_parameters("dwd.grib2",csv=True)
+# print  "\n".join(resultList)
