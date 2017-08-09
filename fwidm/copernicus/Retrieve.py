@@ -37,6 +37,25 @@ class Retrieve(object):
             "target": "output",
         })
 
+    def retrieve_file_with_setup(selfs, fileName, setup):
+        """
+
+        :param fileName:
+        :param setup:
+        :return:
+        """
+        server = ECMWFDataServer()
+        if type(setup) is not dict:
+            raise ValueError("Setup is not a dict, please retrieve a new one from the dataset you want to queue.")
+
+        file = fileName
+        if not file.endswith('.grib'):
+            file += '.grib'
+        setup['target']=file
+        print setup
+        server.retrieve(setup)
+        return file
+
     def retrieve_file(self, fileName, date=datetime.today(), dataSet=Enums.DataSets.CAMS,
                       parameters=Enums.ParameterCAMS.all(), times=Enums.Time.all(),
                       filterEurope=True, dataType=Enums.DataType.FORECAST, steps='0'):
