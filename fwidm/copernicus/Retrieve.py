@@ -3,6 +3,7 @@ import os
 from ecmwfapi import *
 from fwidm.copernicus.data import Enums
 from datetime import datetime, timedelta
+import os
 
 class Retrieve(object):
     DATEFORMAT = "%Y-%m-%d"
@@ -72,6 +73,14 @@ class Retrieve(object):
         :param stepsValues: produces steps for the forecast. A value of 1 returns steps: '0', a value of 2 returns '0/3', 4
         :return:
         """
+        file = fileName
+        if not file.endswith('.grib'):
+            file += '.grib'
+
+        if os.path.isfile(file):
+            print "File exists already."
+            return file
+
         if parameters is None or times is None:
             raise ValueError(
                 "Parameters 'parameters' and 'times' cannot be None. Please provide a valid list of 'Enums.Parameter' or a single 'Enums.Parameter' object."
@@ -82,9 +91,7 @@ class Retrieve(object):
 
         server = ECMWFDataServer()
 
-        file = fileName
-        if not file.endswith('.grib'):
-            file += '.grib'
+
 
         reqClassString=dataSet.value['class']
         reqDataSetString=dataSet.value['name']

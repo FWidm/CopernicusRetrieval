@@ -17,6 +17,7 @@ class CopernicusData:
         self.description = dict["description"]
         self.distance = dict["distance"]
         self.value = dict['value']
+        self.classification = None
 
     def __repr__(self):
 
