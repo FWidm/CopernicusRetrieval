@@ -2,6 +2,8 @@ import json
 
 from datetime import date, datetime
 
+from fwidm.copernicus.data import Enums
+
 
 class CopernicusData:
     """
@@ -17,7 +19,7 @@ class CopernicusData:
         self.description = dict["description"]
         self.distance = dict["distance"]
         self.value = dict['value']
-        self.classification = None
+        self.classification = Enums.Classification.classify(type)
 
     def __repr__(self):
 
