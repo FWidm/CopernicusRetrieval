@@ -1,5 +1,22 @@
 from enum import Enum
 
+class Classification(Enum):
+    ATMOSPHERE = "Atmosphere"
+    CLOUDINESS = "Cloudiness"
+    MISC = "Misc"
+    PRECIPITATION = "Precipitation"
+    TEMPERATURE = "Temperature"
+    WIND = "Wind"
+    @staticmethod
+    def classify(parameterName):
+        if "cloud" in parameterName.lower():
+            return Classification.CLOUDINESS
+        if "temperature" in parameterName.lower():
+            return Classification.TEMPERATURE
+        #default
+        return Classification.ATMOSPHERE
+
+
 class DataType(Enum):
     ANALYSIS = 'an'
     FORECAST = 'fc'

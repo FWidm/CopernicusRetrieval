@@ -1,9 +1,11 @@
 import os
 
+import errno
 from ecmwfapi import *
 from fwidm.copernicus.data import Enums
 from datetime import datetime, timedelta
 import os
+
 
 class Retrieve(object):
     DATEFORMAT = "%Y-%m-%d"
@@ -18,7 +20,8 @@ class Retrieve(object):
         if (datetime.today() - date).days < dataSetDelay:
             raise Exception(
                 "Cannot retrieve Data from this set for the date. The latest data available is from: {} - sent date is: {}".format(
-                    (datetime.today() - timedelta(days=5)).strftime(Retrieve.DATEFORMAT),date.strftime(Retrieve.DATEFORMAT)))
+                    (datetime.today() - timedelta(days=5)).strftime(Retrieve.DATEFORMAT),
+                    date.strftime(Retrieve.DATEFORMAT)))
         return date.strftime(Retrieve.DATEFORMAT)
 
     def era5_retrieve(selfs):
@@ -52,7 +55,22 @@ class Retrieve(object):
         file = fileName
         if not file.endswith('.grib'):
             file += '.grib'
-        setup['target']=file
+
+        if not os.path.exists(os.path.dirname(fileName)):
+            print "Trying to create necessary folder structure..."
+            try:
+                os.makedirs(os.path.dirname(fileName))
+            except OSError as exc:  # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
+            print "Success"
+
+
+        if os.path.isfile(file):
+            print "File exists already."
+            return file
+
+        setup['target'] = file
         print setup
         server.retrieve(setup)
         return file
@@ -74,8 +92,19 @@ class Retrieve(object):
         :return:
         """
         file = fileName
+
         if not file.endswith('.grib'):
             file += '.grib'
+
+        if not os.path.exists(os.path.dirname(fileName)):
+            print "Trying to create necessary folder structure..."
+            try:
+                os.makedirs(os.path.dirname(fileName))
+            except OSError as exc:  # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
+            print "Success"
+
 
         if os.path.isfile(file):
             print "File exists already."
@@ -91,12 +120,9 @@ class Retrieve(object):
 
         server = ECMWFDataServer()
 
-
-
-        reqClassString=dataSet.value['class']
-        reqDataSetString=dataSet.value['name']
+        reqClassString = dataSet.value['class']
+        reqDataSetString = dataSet.value['name']
         step = "0" if dataType is Enums.DataType.ANALYSIS else steps
-
 
         # see keywords here:
         #        https://software.ecmwf.int/wiki/display/UDOC/Identification+keywords?src=contextnavpagetreemode
@@ -122,9 +148,7 @@ class Retrieve(object):
             # europe
             setup["area"] = "75/-20/10/60"
 
-
         print "setup={}".format(setup)
-
 
         server.retrieve(setup)
         return file
@@ -144,4 +168,3 @@ class Retrieve(object):
         steps = [x * interval for x in range(0, stepsValues) if x * interval <= maximumValue]
         # joins the list in the format 0/3/../n*3
         return "/".join(str(i) for i in steps) if len(steps) > 0 else '0'
-

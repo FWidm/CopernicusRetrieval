@@ -37,7 +37,7 @@ points = [[48.4391, 9.9823]]  # ,[48.301669,9.900532],[48.777106,9.180769]]
 parser = Parser.Parser()
 for point in points:
     # result = parser.get_nearest_values("2017-07-20.grib", point, parameters=[Enums.ParameterCAMS.TWO_METRE_TEMPERATURE])
-    result = parser.get_nearest_values(file, point, parameters=[Enums.ParameterCAMS.TWO_METRE_TEMPERATURE])
+    result = parser.get_nearest_values(file, point, parameters=Enums.ParameterCAMS.all())
     print(json.dumps(result, default=CopernicusData.json_serial, indent=2))
 
 
