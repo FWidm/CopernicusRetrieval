@@ -1,4 +1,5 @@
 from enum import Enum
+import dateutil.parser
 
 
 class Classification(Enum):
@@ -44,6 +45,20 @@ class Time(Enum):
     def all():
         # noinspection PyTypeChecker
         return [param for param in Time]
+
+    @staticmethod
+    def convertTimeStampToTimes(timestamp):
+        date = dateutil.parser.parse(timestamp)
+        retTimes = []
+        if date.hour >= 0 and (date.hour <= 3 or date.hour >=21):
+            retTimes.append(Time.ZERO)
+        if date.hour >= 3 and date.hour <= 9:
+            retTimes.append(Time.SIX)
+        if date.hour >= 9 and date.hour <= 15:
+            retTimes.append(Time.TWELVE)
+        if date.hour >= 15 and date.hour < 21:
+            retTimes.append(Time.EIGHTTEEN)
+        return retTimes
 
     @staticmethod
     def lookup_time(time):
