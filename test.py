@@ -17,7 +17,7 @@ dateString = latestRetrievalDate.strftime(retrieve.Retrieve.DATEFORMAT)
 param_list = copernicus_enums.ParameterCAMS.all()
 # print Enums.Parameter.combine_to_string(param_list)
 #retrieve forecast with steps 0/3/6/9/12
-file=r.retrieve_file("data/ecmwf/an-" + dateString, date=latestRetrievalDate, dataType=copernicus_enums.DataType.ANALYSIS)
+file=r.retrieve_file("data/ecmwf/an-" + dateString, date=latestRetrievalDate, data_type=copernicus_enums.DataType.ANALYSIS)
 # file=r.retrieve_file_with_setup("ezpz",{
 #     "class": "mc",
 #     "dataset": "cams_nrealtime",
