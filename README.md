@@ -41,14 +41,16 @@ Retrieves data from the copernicus servers
     print fileName # prints the filename - e.g. "data/ecmwf/an-2017-09-13.grib"
     ```
 2. Parse the file and find data for a specific date, latitude and longitude. If you do not want to specify the `Time` enum manually you can use the `Time.convertTimeStampToTimes(ISOTimeString)`
-```python
-point = [48.4391, 9.9823]  
+    ```python
+    point = [48.4391, 9.9823]  
     times=copernicus_enums.Time.all()
-
-parser = parser.Parser()
-result = parser.get_nearest_values(fileName, point, times=times, parameters=copernicus_enums.ParameterCAMS.all()) # specify your params in an array as named parameter here. Default is all.
-print(json.dumps(result, default=copernicus_data.CopernicusData.json_serial, indent=2)) # Output the data as json.
-```
+    
+    parser = parser.Parser()
+    # specify your params in an array as named parameter as well as the times
+    result = parser.get_nearest_values(fileName, point, times=times, parameters=copernicus_enums.ParameterCAMS.all()) 
+    # Output the data as json.
+    print(json.dumps(result, default=copernicus_data.CopernicusData.json_serial, indent=2)) 
+    ```
 
 ## Tasks
 - Optimize for less strain on the ECWMF Servers
