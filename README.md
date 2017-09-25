@@ -15,6 +15,7 @@ Retrieves data from the copernicus servers
    
    - calling the api from another scripting language can be done
         - refer to [Info.md](/doc/info.md)
+        
 ## Docker Image setup
 - `docker pull continuumio/anaconda` - pull the newest image into cwd (for me its `/Docker`)
 - `docker run -i -t continuumio/anaconda /bin/bash`- run the container, call bin bsh
@@ -30,19 +31,35 @@ Retrieves data from the copernicus servers
 }
 ```
 
+## Usage
+1. Retrieve a file for the latest possible date from the CAMS data set. Per default this lib is setup that the retrieved data is only for europe. You can disable this by passing the named parameter `filterEurope=False`
+    ```python
+    r = retrieve.Retrieve()
+    latestRetrievalDate = datetime.today() - timedelta(days=copernicus_enums.DataSets.CAMS.value['delayDays'])
+    dateString = latestRetrievalDate.strftime(retrieve.Retrieve.DATEFORMAT)
+    fileName=r.retrieve_file("data/ecmwf/an-" + dateString, date=latestRetrievalDate, dataType=copernicus_enums.DataType.ANALYSIS)
+    print fileName # prints the filename - e.g. "data/ecmwf/an-2017-09-13.grib"
+    ```
+2. Parse the file and find data for a specific date, latitude and longitude. If you do not want to specify the `Time` enum manually you can use the `Time.convertTimeStampToTimes(ISOTimeString)`
+```python
+point = [48.4391, 9.9823]  
+    times=copernicus_enums.Time.all()
+
+parser = parser.Parser()
+result = parser.get_nearest_values(fileName, point, times=times, parameters=copernicus_enums.ParameterCAMS.all()) # specify your params in an array as named parameter here. Default is all.
+print(json.dumps(result, default=copernicus_data.CopernicusData.json_serial, indent=2)) # Output the data as json.
+```
+
 ## Tasks
-- Customizable retrieval
 - Optimize for less strain on the ECWMF Servers
 - Retrieve has to be in a separate thread - retrieval can take a long time
 - add all the non grib ".128" parameters
 - Add option to retrieve values for all the indexes in the grib file?
 - When finishing ERA5 receive - credit the data source
     - Receives and returns data by using and modifying Copernicus Climate Change Service Information 2017 -  ongoing
-- Implement something that indicates whether a file is completely ready to be parsed or not. 
-- Prevent files from being accessed prematurely
-- Implement classification
 
 ## Finished
 - Get data nearest to a specific point
 - Retrieve should always retrieve all vals, it doesn't help if you want to optimize if you need to wait 1h+ for data
-
+- Customizable retrieval
+- Implemented classification - see the `copernicus_enums.py` file for more informations
