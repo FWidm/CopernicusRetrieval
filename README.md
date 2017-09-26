@@ -23,13 +23,13 @@ Retrieves data from the copernicus servers
 - `conda install -c conda-forge ecmwf-api-client` - setup the api client
     - Set your ecwmf credentials in `root/.ecmwfapirc`
         - e.g. `<editor> /root/.ecmwfapirc` - you might have to install any editor first by using apt-get, then copy paste your credentials in the form of:
-```
-{
-    "url"   : "https://api.ecmwf.int/v1",
-    "key"   : "supersecretkey",
-    "email" : "your-email@email.com"
-}
-```
+        ```
+        {
+            "url"   : "https://api.ecmwf.int/v1",
+            "key"   : "supersecretkey",
+            "email" : "your-email@email.com"
+        }
+        ```
 
 ## Usage
 1. Retrieve a file for the latest possible date from the CAMS data set. Per default this lib is setup that the retrieved data is only for europe. You can disable this by passing the named parameter `filterEurope=False`
